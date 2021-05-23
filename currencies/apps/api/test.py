@@ -1,4 +1,6 @@
 from rest_framework.test import APITestCase
+from rest_framework.test import APIRequestFactory
+
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -41,24 +43,18 @@ class ApiTestCase(APITestCase):
             password='test'
         )
 
-    def test_currency_format(self):
+    def test_currency_format_(self):
         '''
         Testing Currency format viewset
         '''
         # get obj, empty
-        res = self.client.get('/api/v1/currency/', {
+        get_empty = self.client.get('/api/v1/currency_query/', {
             "country": "Argentina",
             "currency": "USD",
         })
-        self.assertEqual(res.status_code, 404)
-        # create obj, worng parameters
-        res = self.client.post('/api/v1/currency/', {
-            "worng": "Argentina",
-            "worng2": "USD",
-        }, format='json')
-        self.assertEqual(res.status_code, 403)
+        self.assertEqual(get_empty.status_code, 404)
         # create obj, correct parameters
-        res = self.client.post('/api/v1/currency/', {
+        create = self.client.post('/api/v1/currency/', {
             "country": "Argentina",
             "currency_code": "USD",
             "currency_nomenclature": "code",
@@ -66,11 +62,37 @@ class ApiTestCase(APITestCase):
             "cents_enabled": "True",
             "display_format": "#.###,##"
         }, format='json')
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(create.status_code, 200)
+        create = self.client.post('/api/v1/currency/', {
+            "country": "Argentina2",
+            "currency_code": "USD",
+            "currency_nomenclature": "code",
+            "currency_symbol_pos": "after",
+            "cents_enabled": "True",
+            "display_format": "#.###,##"
+        }, format='json')
+        self.assertEqual(create.status_code, 200)
+        # list obj
+        get = self.client.get('/api/v1/currency/')
+        self.assertEqual(get.status_code, 200)
         # get obj, exists
-        res = self.client.get('/api/v1/currency/', {
+        get_exists = self.client.get('/api/v1/currency_query/', {
+            "country": "Argentina",
+            "currency": "USD",
+        })
+        self.assertEqual(get_exists.status_code, 200)
+        # update obj
+        up = self.client.put(f"/api/v1/currency/1/", {
             "country": "Argentina",
             "currency_code": "USD",
+            "currency_symbol": "USDModified",
+            "currency_nomenclature": "code",
+            "currency_symbol_pos": "after",
+            "cents_enabled": "True",
+            "display_format": "#.###,##"
         }, format='json')
-        self.assertEqual(res.status_code, 200)
-        # need extend test for this
+        self.assertEqual(up.status_code, 200)
+        # delete obj
+        delete = self.client.delete(f"/api/v1/currency/1/", {
+        }, format='json')
+        self.assertEqual(delete.status_code, 200)

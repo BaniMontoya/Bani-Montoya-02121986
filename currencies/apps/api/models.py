@@ -23,3 +23,7 @@ class CurencyFormat(models.Model):
         default=False)  # Show cents or no cents
     # Display formats such as #,###.## or #.###,##
     display_format = models.CharField(max_length=30)
+    
+    class Meta:
+        unique_together = ('country', 'currency_code',)
+        

@@ -1,27 +1,42 @@
 from django.core.serializers import serialize
 from django.shortcuts import get_object_or_404
-from rest_framework.viewsets import ViewSet
+from rest_framework.viewsets import ViewSet, ModelViewSet
 from rest_framework.response import Response
 from apps.api import serializers as api_serializers
 from apps.api import models as api_models
 from django.http import JsonResponse
 from rest_framework.permissions import IsAuthenticated
 
+from django.db.utils import IntegrityError
 
-class CurrencyFormatViewSet(ViewSet):
-    permission_classes = (IsAuthenticated,)
 
-    def get(self, request):
-        country = self.request.query_params.get('country', None)
-        try:
-            obj = api_models.CurencyFormat.objects.get(
-                country=country)
-            serializer = api_serializers.CurencyFormatSerializer(obj)
-            return Response(serializer.data, status=200)
-        except:
+def query_currency_format_by_country_and_currency_code(request):
+    data = request.GET
+    try:
+        country = data['country']
+    except:
+        country = None
+    if country:
+        queryset = api_models.CurencyFormat.objects.filter(
+            country=country)
+        if queryset.exists():
+            return JsonResponse({"results": list(queryset.values())})
+        else:
             return JsonResponse({'Message': 'Currency or country not found!'}, status=404)
+    else:
+        return JsonResponse({'Message': 'Currency or country not found!'}, status=404)
 
-    def create(self, request):
+
+class CurrencyFormatViewSet(ModelViewSet):
+    permission_classes = (IsAuthenticated,)
+    queryset = api_models.CurencyFormat.objects.all()
+    serializer_class = api_serializers.CurencyFormatSerializer
+    http_method_names = ['get', 'post', 'put', 'delete']
+
+    def get_queryset(self):
+        return self.queryset
+
+    def create(self, request, *args, **kwargs):
         data = request.data
         if "country" in data:
             country = data['country']
@@ -47,10 +62,18 @@ class CurrencyFormatViewSet(ViewSet):
             display_format = data['display_format']
         else:
             return Response({"Message": "display_format is mandatory!"}, status=403)
-        create = api_models.CurencyFormat.objects.create(
-            country=country, currency_code=currency_code, currency_nomenclature=currency_nomenclature,
-            currency_symbol_pos=currency_symbol_pos, cents_enabled=cents_enabled, display_format=display_format
-        )
+        try:
+            create = api_models.CurencyFormat.objects.create(
+                country=country, currency_code=currency_code, currency_nomenclature=currency_nomenclature,
+                currency_symbol_pos=currency_symbol_pos, cents_enabled=str(cents_enabled).capitalize(), display_format=display_format
+            )
+        except IntegrityError:
+            create = None
+            return Response({"Message": "Country and Currency should by unique!"}, status=400)
+
         return Response({"Message": "Created!"}, status=200)
 
-
+    def destroy(self, *args, **kwargs):
+        serializer = self.get_serializer(self.get_object())
+        super().destroy(*args, **kwargs)
+        return Response(serializer.data, status=200)
