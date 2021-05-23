@@ -8,26 +8,37 @@ from django.http import JsonResponse
 from rest_framework.permissions import IsAuthenticated
 
 from django.db.utils import IntegrityError
+from rest_framework.decorators import api_view
 
-
+@api_view(['GET'])
 def query_currency_format_by_country_and_currency_code(request):
-    data = request.GET
-    try:
-        country = data['country']
-    except:
-        country = None
-    if country:
-        queryset = api_models.CurencyFormat.objects.filter(
-            country=country)
-        if queryset.exists():
-            return JsonResponse({"results": list(queryset.values())})
+    """
+    param   country -- A country name in English
+    param   currency_code -- A currency_code example: USD, EUR
+    """
+    if request.method == 'GET':
+        data = request.GET
+        try:
+            country = data['country']
+            currency_code = data['currency_code']
+        except:
+            country = None
+            currency_code = None
+        if country:
+            queryset = api_models.CurencyFormat.objects.filter(
+                country=country, currency_code=currency_code)
+            if queryset.exists():
+                return JsonResponse({"results": list(queryset.values())})
+            else:
+                return JsonResponse({'Message': 'Currency or country not found!'}, status=404)
         else:
             return JsonResponse({'Message': 'Currency or country not found!'}, status=404)
-    else:
-        return JsonResponse({'Message': 'Currency or country not found!'}, status=404)
-
+    return JsonResponse({'Message': 'Currency or country not found!'}, status=404)
 
 class CurrencyFormatViewSet(ModelViewSet):
+    """
+    Set of CRUD operations except get query by country and currency code
+    """
     permission_classes = (IsAuthenticated,)
     queryset = api_models.CurencyFormat.objects.all()
     serializer_class = api_serializers.CurencyFormatSerializer

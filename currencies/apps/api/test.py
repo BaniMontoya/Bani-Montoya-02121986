@@ -48,9 +48,9 @@ class ApiTestCase(APITestCase):
         Testing Currency format viewset
         '''
         # get obj, empty
-        get_empty = self.client.get('/api/v1/currency_query/', {
+        get_empty = self.client.get('/api/v1/query_currency_format_by_country_and_currency_code/', {
             "country": "Argentina",
-            "currency": "USD",
+            "currency_code": "USD",
         })
         self.assertEqual(get_empty.status_code, 404)
         # create obj, correct parameters
@@ -76,9 +76,9 @@ class ApiTestCase(APITestCase):
         get = self.client.get('/api/v1/currency/')
         self.assertEqual(get.status_code, 200)
         # get obj, exists
-        get_exists = self.client.get('/api/v1/currency_query/', {
+        get_exists = self.client.get('/api/v1/query_currency_format_by_country_and_currency_code/', {
             "country": "Argentina",
-            "currency": "USD",
+            "currency_code": "USD",
         })
         self.assertEqual(get_exists.status_code, 200)
         # update obj

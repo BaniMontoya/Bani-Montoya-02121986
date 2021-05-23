@@ -1,3 +1,5 @@
 django <3
 gunicorn
 djangorestframework
+django-rest-swagger
+drf-yasg[validation]

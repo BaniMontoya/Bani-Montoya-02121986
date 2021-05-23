@@ -34,14 +34,18 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.staticfiles',
+    'drf_yasg',
+
     'rest_framework',
     'rest_framework.authtoken',
-
+    'rest_framework_swagger',
     'apps.api',
 ]
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',  # <-- And here
+        'rest_framework.authentication.TokenAuthentication',
+       # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+
     ],
 }
 
