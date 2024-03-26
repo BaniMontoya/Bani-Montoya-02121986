@@ -82,7 +82,7 @@ class ApiTestCase(APITestCase):
         })
         self.assertEqual(get_exists.status_code, 200)
         # update obj
-        up = self.client.put(f"/api/v1/currency/1/", {
+        up = self.client.put("/api/v1/currency/1/", {
             "country": "Argentina",
             "currency_code": "USD",
             "currency_symbol": "USDModified",
@@ -93,6 +93,6 @@ class ApiTestCase(APITestCase):
         }, format='json')
         self.assertEqual(up.status_code, 200)
         # delete obj
-        delete = self.client.delete(f"/api/v1/currency/1/", {
+        delete = self.client.delete("/api/v1/currency/1/", {
         }, format='json')
         self.assertEqual(delete.status_code, 200)
